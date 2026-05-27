@@ -12,11 +12,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #1a1a2e;
     font-family: sans-serif;
+    overflow: hidden;
+  }
+
+  #pixel-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #1a1a2e;
   }
 
   .trigger {
+    position: relative;
+    z-index: 1;
     color: #e94560;
     font-size: 24px;
     text-decoration: underline;
@@ -25,6 +34,7 @@
     border: 2px solid #e94560;
     border-radius: 8px;
     transition: background 0.2s, color 0.2s;
+    background: rgba(26,26,46,0.85);
   }
   .trigger:hover {
     background: #e94560;
@@ -36,7 +46,7 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #0f3460;
+    background: rgba(15, 52, 96, 0.92);
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -45,11 +55,13 @@
   }
 
   .overlay .big-text {
-    font-size: clamp(3rem, 15vw, 10rem);
+    font-size: clamp(2rem, 8vw, 5rem);
     font-weight: 900;
     color: #e94560;
     text-shadow: 0 0 40px rgba(233, 69, 96, 0.6);
     animation: pulse 0.8s ease-in-out infinite alternate;
+    text-align: center;
+    line-height: 1.4;
   }
 
   .overlay .hint {
@@ -66,10 +78,12 @@
 </head>
 <body>
 
+<canvas id="pixel-bg"></canvas>
+
 <a class="trigger">点我试试</a>
 
 <div class="overlay" id="overlay">
-  <div class="big-text">你是笨蛋</div>
+  <div class="big-text">刘亚冰，史雨禅。<br>两个大笨蛋</div>
   <div class="hint">点击任意位置关闭</div>
 </div>
 
@@ -90,6 +104,158 @@
       overlay.style.display = 'none';
     }
   });
+
+  // ── 像素卡通吐舌头动态背景 ──
+  const canvas = document.getElementById('pixel-bg');
+  const ctx = canvas.getContext('2d');
+  const PIXEL = 8; // 每个"像素块"的大小
+  let characters = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // 绘制一个像素卡通人物 (在虚拟坐标 x,y 处，scale 控制大小)
+  function drawCharacter(ctx, x, y, scale, tonguePhase) {
+    const s = scale;
+    const p = PIXEL;
+
+    // 皮肤色
+    const skin = '#ffcc99';
+    const skinDark = '#e6a870';
+    const hair = '#4a3728';
+    const eyeWhite = '#fff';
+    const eyePupil = '#222';
+    const cheek = '#ff9999';
+    const tongueColor = '#ff5c7a';
+    const mouthColor = '#8b3a3a';
+
+    const px = x;
+    const py = y;
+
+    function rect(rx, ry, rw, rh, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(px + rx * s, py + ry * s, rw * s, rh * s);
+    }
+
+    // ── 头发 ──
+    rect(2, 0, 8, 2, hair);
+    rect(1, 1, 10, 1, hair);
+    rect(1, 2, 1, 1, hair);
+    rect(10, 2, 1, 1, hair);
+
+    // ── 脸 ──
+    rect(2, 2, 8, 7, skin);
+    rect(1, 3, 10, 4, skin);
+    rect(2, 7, 8, 1, skinDark);
+
+    // ── 眼睛 ──
+    rect(3, 3, 3, 3, eyeWhite);
+    rect(7, 3, 3, 3, eyeWhite);
+    // 瞳孔 (左右看)
+    rect(4, 4, 2, 2, eyePupil);
+    rect(8, 4, 2, 2, eyePupil);
+
+    // ── 腮红 ──
+    rect(2, 6, 2, 1, cheek);
+    rect(9, 6, 2, 1, cheek);
+
+    // ── 嘴巴和舌头 (动画部分) ──
+    const tongueLen = Math.abs(Math.sin(tonguePhase)) * 2 + 1; // 舌头伸出长度 1-3
+    rect(4, 7, 5, 1, mouthColor); // 嘴巴
+    rect(4, 1, 5, 2, mouthColor); // 上嘴
+
+    // 舌头
+    for (let i = 0; i < tongueLen; i++) {
+      rect(5, 7 + i, 3, 1, tongueColor);
+    }
+  }
+
+  // 绘制像素爱心
+  function drawHeart(ctx, x, y, scale, alpha) {
+    const s = scale;
+    ctx.globalAlpha = alpha;
+
+    const hearts = [
+      [0,1],[2,1],  [1,0],
+      [0,1],[1,2],[2,3],[3,2],[4,1],
+      [1,2],[2,3],[3,2],
+    ];
+
+    ctx.fillStyle = '#e94560';
+    hearts.forEach(([hx, hy]) => {
+      ctx.fillRect(x + hx * s, y + hy * s, s, s);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function spawnCharacters() {
+    characters = [];
+    const count = Math.floor((canvas.width * canvas.height) / 18000);
+    for (let i = 0; i < count; i++) {
+      characters.push({
+        x: Math.random() * (canvas.width - 80),
+        y: Math.random() * (canvas.height - 80),
+        scale: 2 + Math.random() * 2.5,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.03 + Math.random() * 0.06,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        heartTimer: 0,
+        heartAlpha: 0,
+      });
+    }
+  }
+  spawnCharacters();
+  window.addEventListener('resize', spawnCharacters);
+
+  let frame = 0;
+  function animate() {
+    frame++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 画星空粒子
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    for (let i = 0; i < 60; i++) {
+      const sx = (i * 137.5 + frame * 0.1) % canvas.width;
+      const sy = (i * 251.3) % canvas.height;
+      const twinkle = Math.sin(frame * 0.05 + i) * 0.5 + 0.5;
+      ctx.globalAlpha = twinkle * 0.6;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+
+    characters.forEach((ch) => {
+      ch.phase += ch.speed;
+      ch.x += ch.vx;
+      ch.y += ch.vy;
+
+      // 边界反弹
+      if (ch.x < 0) { ch.x = 0; ch.vx *= -1; }
+      if (ch.x > canvas.width - 80) { ch.x = canvas.width - 80; ch.vx *= -1; }
+      if (ch.y < 0) { ch.y = 0; ch.vy *= -1; }
+      if (ch.y > canvas.height - 80) { ch.y = canvas.height - 80; ch.vy *= -1; }
+
+      drawCharacter(ctx, ch.x, ch.y, ch.scale, ch.phase);
+
+      // 每隔一段时间冒爱心
+      ch.heartTimer--;
+      if (ch.heartTimer <= 0 && Math.random() < 0.01) {
+        ch.heartTimer = 40;
+        ch.heartAlpha = 1;
+      }
+      if (ch.heartAlpha > 0) {
+        ch.heartAlpha -= 0.015;
+        drawHeart(ctx, ch.x - 6, ch.y - 14, 1.5, ch.heartAlpha);
+      }
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
 </script>
 
 </body>
