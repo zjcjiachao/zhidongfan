@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点击试试</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a2e;
+    font-family: sans-serif;
+  }
+
+  .trigger {
+    color: #e94560;
+    font-size: 24px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 12px 24px;
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .trigger:hover {
+    background: #e94560;
+    color: #fff;
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0f3460;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .overlay .big-text {
+    font-size: clamp(3rem, 15vw, 10rem);
+    font-weight: 900;
+    color: #e94560;
+    text-shadow: 0 0 40px rgba(233, 69, 96, 0.6);
+    animation: pulse 0.8s ease-in-out infinite alternate;
+  }
+
+  .overlay .hint {
+    margin-top: 30px;
+    font-size: 16px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to   { transform: scale(1.08); }
+  }
+</style>
+</head>
+<body>
+
+<a class="trigger">点我试试</a>
+
+<div class="overlay" id="overlay">
+  <div class="big-text">你是笨蛋</div>
+  <div class="hint">点击任意位置关闭</div>
+</div>
+
+<script>
+  const trigger = document.querySelector('.trigger');
+  const overlay = document.getElementById('overlay');
+
+  trigger.addEventListener('click', () => {
+    overlay.style.display = 'flex';
+  });
+
+  overlay.addEventListener('click', () => {
+    overlay.style.display = 'none';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.style.display === 'flex') {
+      overlay.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>
