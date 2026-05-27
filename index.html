@@ -46,19 +46,57 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(15, 52, 96, 0.92);
+    background: #16213e;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     user-select: none;
+    overflow: hidden;
+  }
+
+  /* 像素角色背景层 */
+  .overlay .char-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .overlay .char-bg img {
+    max-width: 90vw;
+    max-height: 70vh;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    animation: charBounce 1.2s ease-in-out infinite alternate;
+  }
+
+  /* 多个小角色环绕 */
+  .overlay .char-bg .mini-char {
+    position: absolute;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    opacity: 0.5;
+  }
+
+  .overlay .text-layer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: radial-gradient(ellipse, rgba(22,33,62,0.85) 40%, transparent 80%);
+    padding: 40px 60px;
+    border-radius: 20px;
   }
 
   .overlay .big-text {
     font-size: clamp(2rem, 8vw, 5rem);
     font-weight: 900;
     color: #e94560;
-    text-shadow: 0 0 40px rgba(233, 69, 96, 0.6);
+    text-shadow: 0 0 40px rgba(233, 69, 96, 0.6), 0 0 80px rgba(233, 69, 96, 0.3);
     animation: pulse 0.8s ease-in-out infinite alternate;
     text-align: center;
     line-height: 1.4;
@@ -67,12 +105,41 @@
   .overlay .hint {
     margin-top: 30px;
     font-size: 16px;
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.5);
+    animation: fadeHint 2s ease-in-out infinite;
+  }
+
+  /* 吐舌头的恶搞提示 */
+  .overlay .tongue-note {
+    position: absolute;
+    bottom: 12%;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    color: #ff6b8a;
+    animation: bounceNote 0.6s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 2;
   }
 
   @keyframes pulse {
     from { transform: scale(1); }
     to   { transform: scale(1.08); }
+  }
+
+  @keyframes charBounce {
+    0%   { transform: translateY(0) scale(1); }
+    30%  { transform: translateY(-12px) scale(1.05); }
+    60%  { transform: translateY(-3px) scale(1.02); }
+    100% { transform: translateY(-8px) scale(1.04); }
+  }
+
+  @keyframes fadeHint {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.8; }
+  }
+
+  @keyframes bounceNote {
+    from { transform: translateY(0) rotate(-3deg); }
+    to   { transform: translateY(-10px) rotate(3deg); }
   }
 </style>
 </head>
@@ -83,8 +150,18 @@
 <a class="trigger">点我试试</a>
 
 <div class="overlay" id="overlay">
-  <div class="big-text">刘亚冰，史雨禅。<br>两个大笨蛋</div>
-  <div class="hint">点击任意位置关闭</div>
+  <div class="char-bg">
+    <img src="pixel-character.webp" alt="pixel character">
+    <img class="mini-char" src="pixel-character.webp" alt="" style="top:5%;left:3%;width:60px;transform:scaleX(-1);opacity:0.35;">
+    <img class="mini-char" src="pixel-character.webp" alt="" style="top:10%;right:5%;width:50px;opacity:0.3;">
+    <img class="mini-char" src="pixel-character.webp" alt="" style="bottom:15%;left:8%;width:55px;opacity:0.3;">
+    <img class="mini-char" src="pixel-character.webp" alt="" style="bottom:20%;right:10%;width:48px;transform:scaleX(-1);opacity:0.35;">
+  </div>
+  <div class="text-layer">
+    <div class="big-text">刘亚冰，史雨禅。<br>两个大笨蛋</div>
+    <div class="hint">点击任意位置关闭</div>
+  </div>
+  <div class="tongue-note">😛 略略略~</div>
 </div>
 
 <script>
